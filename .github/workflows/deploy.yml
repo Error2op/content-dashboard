@@ -27,13 +27,45 @@ jobs:
         run: |
           npx opennextjs-cloudflare build
           cp .open-next/worker.js .open-next/cloudflare/_worker.js
-          cp -r .open-next/assets/. .open-next/cloudflare/assets/ 2>/dev/null || true
         env:
           TURSO_DATABASE_URL: ${{ secrets.TURSO_DATABASE_URL }}
           TURSO_AUTH_TOKEN: ${{ secrets.TURSO_AUTH_TOKEN }}
           YOUTUBE_API_KEY: ${{ secrets.YOUTUBE_API_KEY }}
 
-      - name: Deploy with Wrangler
-        run: npx wrangler pages deploy .open-next/cloudflare --project-name=content-dashboard
+      - name: Deploy via Cloudflare API
+        run: |
+          cd .open-next/cloudflare
+
+          # Create a zip with all files
+          zip -r ../deploy.zip . -x "assets/*"
+
+          # Get upload URL
+          PREVIEW_RESP=$(curl -s -X POST \
+            -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" \
+            -H "Content-Type: application/json" \
+            -d "{\"project_name\":\"content-dashboard\",\"branch\":\"production\"}" \
+            "https://api.cloudflare.com/client/v4/accounts/af6e0e1df24c966076169fca50cb29e8/pages/engine/preview")
+
+          UPLOAD_URL=$(echo "$PREVIEW_RESP" | python3 -c "import sys,json; print(json.load(sys.stdin).get('result',{}).get('upload_url',''))")
+          DEPLOYMENT_ID=$(echo "$PREVIEW_RESP" | python3 -c "import sys,json; print(json.load(sys.stdin).get('result',{}).get('deployment_id',''))")
+
+          echo "UPLOAD_URL=$UPLOAD_URL"
+          echo "DEPLOYMENT_ID=$DEPLOYMENT_ID"
+
+          if [ -z "$UPLOAD_URL" ] || [ -z "$DEPLOYMENT_ID" ]; then
+            echo "Failed to get upload URL"
+            echo "$PREVIEW_RESP"
+            exit 1
+          fi
+
+          # Upload zip
+          curl -s -X PUT "$UPLOAD_URL" --data-binary @../deploy.zip
+
+          # Trigger deployment
+          DEPLOY_RESP=$(curl -s -X POST \
+            -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" \
+            "https://api.cloudflare.com/client/v4/accounts/af6e0e1df24c966076169fca50cb29e8/pages/engine/preview/deploy/$DEPLOYMENT_ID")
+
+          echo "Deploy response: $DEPLOY_RESP"
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
