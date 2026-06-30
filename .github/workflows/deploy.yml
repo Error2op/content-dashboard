@@ -35,4 +35,4 @@ jobs:
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: af6e0e1df24c966076169fca50cb29e8
-          command: pages deploy .open-next/cloudflare --project-name=content-dashboard
+          command: pages deploy .open-next/cloudflare --project-name=content-dashboard --no-bundle
