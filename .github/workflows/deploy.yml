@@ -23,11 +23,29 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Build and Deploy
-        run: npx opennextjs-cloudflare build && npx opennextjs-cloudflare deploy
+      - name: Build with OpenNext
+        run: npx opennextjs-cloudflare build
         env:
           TURSO_DATABASE_URL: ${{ secrets.TURSO_DATABASE_URL }}
           TURSO_AUTH_TOKEN: ${{ secrets.TURSO_AUTH_TOKEN }}
           YOUTUBE_API_KEY: ${{ secrets.YOUTUBE_API_KEY }}
+
+      - name: Debug - List build output
+        run: |
+          echo "=== .open-next/ structure ==="
+          find .open-next -type f | head -50
+          echo ""
+          echo "=== .open-next/assets/ ==="
+          ls -la .open-next/assets/ 2>/dev/null || echo "No assets dir"
+          echo ""
+          echo "=== .open-next/cloudflare/ ==="
+          ls -la .open-next/cloudflare/ 2>/dev/null || echo "No cloudflare dir"
+          echo ""
+          echo "=== Total files in .open-next ==="
+          find .open-next -type f | wc -l
+
+      - name: Deploy with OpenNext
+        run: npx opennextjs-cloudflare deploy
+        env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: af6e0e1df24c966076169fca50cb29e8
