@@ -5,16 +5,9 @@ on:
     branches: [master]
   workflow_dispatch:
 
-# Cloudflare Pages handles builds automatically via Git integration.
-# This workflow is only needed if you want manual deploy control.
-# To use: connect the GitHub repo in Cloudflare Pages dashboard,
-# set build command to: npx opennextjs-cloudflare build
-# set output directory to: .open-next/cloudflare
-
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    if: ${{ github.event_name == 'workflow_dispatch' }}
     timeout-minutes: 15
 
     steps:
@@ -24,7 +17,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '22'
           cache: 'npm'
 
       - name: Install dependencies
@@ -32,6 +25,10 @@ jobs:
 
       - name: Build with OpenNext
         run: npx opennextjs-cloudflare build
+        env:
+          TURSO_DATABASE_URL: ${{ secrets.TURSO_DATABASE_URL }}
+          TURSO_AUTH_TOKEN: ${{ secrets.TURSO_AUTH_TOKEN }}
+          YOUTUBE_API_KEY: ${{ secrets.YOUTUBE_API_KEY }}
 
       - name: Deploy to Cloudflare Pages
         uses: cloudflare/wrangler-action@v3
