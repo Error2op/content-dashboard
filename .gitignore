@@ -40,3 +40,13 @@ next-env.d.ts
 .wrangler
 .dev.vars*
 !.dev.vars.example
+
+# local database files
+db
+db-wal
+db-shm
+
+# tokens / secrets
+.db_token.local
+temp_token.txt
+token.txt
