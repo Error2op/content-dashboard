@@ -1,15 +1,24 @@
-name: Sync YouTube Shorts Data
+name: Sync YouTube Data
 
 on:
   schedule:
-    # Every 6 hours: 2am, 8am, 2pm, 8pm UTC
-    - cron: '0 2,8,14,20 * * *'
-  workflow_dispatch:  # Manual trigger
+    # Run every 6 hours: 00:00, 06:00, 12:00, 18:00 UTC
+    - cron: '0 */6 * * *'
+  workflow_dispatch:
+    inputs:
+      sync_option:
+        description: 'Which sync to run'
+        required: true
+        type: choice
+        default: 'full'
+        options:
+          - full
+          - single-channel
 
 jobs:
   sync:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 15
 
     steps:
       - name: Checkout
@@ -18,19 +27,16 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '22'
           cache: 'npm'
 
       - name: Install dependencies
         run: npm ci
 
-      - name: Run sync
+      - name: Sync all channels
+        if: github.event_name == 'schedule' || github.event.inputs.sync_option == 'full'
         run: npx tsx scripts/sync.ts
         env:
-          YOUTUBE_API_KEY: ${{ secrets.YOUTUBE_API_KEY }}
           TURSO_DATABASE_URL: ${{ secrets.TURSO_DATABASE_URL }}
           TURSO_AUTH_TOKEN: ${{ secrets.TURSO_AUTH_TOKEN }}
-
-      - name: Summary
-        run: |
-          echo "Sync completed at $(date -u '+%Y-%m-%d %H:%M:%S UTC')"
+          YOUTUBE_API_KEY: ${{ secrets.YOUTUBE_API_KEY }}
