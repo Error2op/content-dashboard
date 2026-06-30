@@ -30,19 +30,19 @@ jobs:
           TURSO_AUTH_TOKEN: ${{ secrets.TURSO_AUTH_TOKEN }}
           YOUTUBE_API_KEY: ${{ secrets.YOUTUBE_API_KEY }}
 
-      - name: Debug - List build output
+      - name: Bundle all static assets into cloudflare directory
         run: |
-          echo "=== .open-next/ structure ==="
-          find .open-next -type f | head -50
+          # Copy actual Next.js static assets (JS chunks, CSS, images) into cloudflare dir
+          # so wrangler uploads them as static assets
+          echo "=== Before copy ==="
+          find .open-next/cloudflare -type f | wc -l
+          echo "=== assets/ _next ==="
+          find .open-next/assets/_next -type f 2>/dev/null | wc -l
           echo ""
-          echo "=== .open-next/assets/ ==="
-          ls -la .open-next/assets/ 2>/dev/null || echo "No assets dir"
-          echo ""
-          echo "=== .open-next/cloudflare/ ==="
-          ls -la .open-next/cloudflare/ 2>/dev/null || echo "No cloudflare dir"
-          echo ""
-          echo "=== Total files in .open-next ==="
-          find .open-next -type f | wc -l
+          # Copy static assets into cloudflare dir for wrangler to pick up
+          cp -r .open-next/assets/. .open-next/cloudflare/ 2>/dev/null || true
+          echo "=== After copy ==="
+          find .open-next/cloudflare -type f | wc -l
 
       - name: Deploy with OpenNext
         run: npx opennextjs-cloudflare deploy
