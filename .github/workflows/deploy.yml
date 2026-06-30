@@ -23,17 +23,11 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Build with OpenNext
-        run: |
-          npx opennextjs-cloudflare build
-          cp .open-next/worker.js .open-next/cloudflare/_worker.js
+      - name: Build and Deploy
+        run: npx opennextjs-cloudflare build && npx opennextjs-cloudflare deploy
         env:
           TURSO_DATABASE_URL: ${{ secrets.TURSO_DATABASE_URL }}
           TURSO_AUTH_TOKEN: ${{ secrets.TURSO_AUTH_TOKEN }}
           YOUTUBE_API_KEY: ${{ secrets.YOUTUBE_API_KEY }}
-
-      - name: Deploy with wrangler
-        run: npx wrangler pages deploy .open-next/cloudflare --project-name=content-dashboard --no-bundle
-        env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: af6e0e1df24c966076169fca50cb29e8

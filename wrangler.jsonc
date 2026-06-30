@@ -1,7 +1,6 @@
 {
 	"$schema": "node_modules/wrangler/config-schema.json",
 	"name": "content-dashboard",
-	"account_id": "af6e0e1df24c966076169fca50cb29e8",
 	"compatibility_date": "2026-06-30",
 	"compatibility_flags": [
 		"nodejs_compat",
