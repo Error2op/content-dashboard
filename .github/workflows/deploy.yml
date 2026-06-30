@@ -30,9 +30,7 @@ jobs:
           TURSO_AUTH_TOKEN: ${{ secrets.TURSO_AUTH_TOKEN }}
           YOUTUBE_API_KEY: ${{ secrets.YOUTUBE_API_KEY }}
 
-      - name: Deploy to Cloudflare Pages
-        uses: cloudflare/wrangler-action@v3
-        with:
-          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          accountId: af6e0e1df24c966076169fca50cb29e8
-          command: pages deploy .open-next/cloudflare --project-name=content-dashboard --no-bundle
+      - name: Deploy Worker and Assets
+        run: npx wrangler deploy .open-next/worker.js --assets .open-next/cloudflare --config wrangler.jsonc
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
