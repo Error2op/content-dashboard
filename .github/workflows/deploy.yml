@@ -23,14 +23,11 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Build with OpenNext
-        run: npx opennextjs-cloudflare build
+      - name: Build and Deploy
+        run: npx opennextjs-cloudflare deploy
         env:
           TURSO_DATABASE_URL: ${{ secrets.TURSO_DATABASE_URL }}
           TURSO_AUTH_TOKEN: ${{ secrets.TURSO_AUTH_TOKEN }}
           YOUTUBE_API_KEY: ${{ secrets.YOUTUBE_API_KEY }}
-
-      - name: Deploy Worker and Assets
-        run: npx wrangler deploy .open-next/worker.js --assets .open-next/cloudflare --config wrangler.jsonc
-        env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: af6e0e1df24c966076169fca50cb29e8
