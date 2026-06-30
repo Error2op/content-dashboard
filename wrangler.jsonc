@@ -6,5 +6,16 @@
 		"nodejs_compat",
 		"global_fetch_strictly_public"
 	],
-	"pages_build_output_dir": ".open-next/cloudflare"
+	"main": ".open-next/worker.js",
+	"assets": ".open-next/cloudflare",
+	"d1_databases": [
+		{
+			"binding": "TURSO_DATABASE",
+			"database_name": "content-dashboard-db",
+			"database_id": "af6e0e1df24c966076169fca50cb29e8"
+		}
+	],
+	"vars": {
+		"NODE_VERSION": "22"
+	}
 }
