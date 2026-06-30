@@ -32,22 +32,8 @@ jobs:
           TURSO_AUTH_TOKEN: ${{ secrets.TURSO_AUTH_TOKEN }}
           YOUTUBE_API_KEY: ${{ secrets.YOUTUBE_API_KEY }}
 
-      - name: Create Pages deployment
-        run: |
-          cd .open-next/cloudflare
-
-          # Create deployment via Pages API
-          RESP=$(curl -s -X POST \
-            -H "Authorization: Bearer $CLOUD...EN" \
-            -H "Content-Type: application/json" \
-            -d '{"branch":"production","production_branch":"master"}' \
-            "https://api.cloudflare.com/client/v4/accounts/af6e0e1df24c966076169fca50cb29e8/pages/projects/content-dashboard/deployments")
-
-          echo "Create response: $RESP"
+      - name: Deploy with wrangler
+        run: npx wrangler pages deploy .open-next/cloudflare --project-name=content-dashboard
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-
-      - name: Deploy via wrangler (account from config)
-        run: npx wrangler pages deploy .open-next/cloudflare --project-name=content-dashboard --account-id=af6e0e1df24c966076169fca50cb29e8
-        env:
-          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: af6e0e1df24c966076169fca50cb29e8
