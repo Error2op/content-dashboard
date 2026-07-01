@@ -16,13 +16,30 @@ function parseDuration(iso: string): number {
   return parseInt(m[1]||'0')*3600 + parseInt(m[2]||'0')*60 + parseInt(m[3]||'0');
 }
 
-async function ytFetch(endpoint: string, params: Record<string,string>) {
+async function ytFetch(endpoint: string, params: Record<string,string>, retries = 2) {
   const url = new URL(`${YOUTUBE_API}/${endpoint}`);
   url.searchParams.set('key', process.env.YOUTUBE_API_KEY!);
   Object.entries(params).forEach(([k,v]) => url.searchParams.set(k,v));
-  const res = await fetch(url.toString());
-  if (!res.ok) throw new Error(`YT API ${res.status}: ${await res.text()}`);
-  return res.json();
+  
+  let lastError;
+  for (let i = 0; i <= retries; i++) {
+    try {
+      const res = await fetch(url.toString());
+      if (!res.ok) {
+        const errBody = await res.text();
+        throw new Error(`YT API ${res.status}: ${errBody.substring(0, 200)}`);
+      }
+      return res.json();
+    } catch (err: any) {
+      lastError = err;
+      if (i < retries) {
+        const delay = Math.pow(2, i) * 1000;
+        console.log(`  Retry ${i + 1}/${retries} after ${delay}ms...`);
+        await new Promise(r => setTimeout(r, delay));
+      }
+    }
+  }
+  throw lastError;
 }
 
 async function syncChannel(handle: string, name: string, channelId?: string) {
